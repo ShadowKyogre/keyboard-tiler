@@ -7,10 +7,10 @@ Why not have your keyboard represent the grid/tiles of your screen? This is a py
 With this script you can have tiling functionality with simple keybindings in any floating WM. It has been tested on Pekwm and Openbox so far, though any window manager that works well with xdotool should work.
 
 Some examples (look down at your keyboard and you'll get the idea):
-- Fullscreen: `python2 keyboard-tiler.py 1/`
-- Top Half of Screen: `python2 keyboard-tiler.py 1p`
-- Top Right of Screen: `python2 keyboard-tiler.py 6p`
-- Right Half of Screen: `python2 keyboard-tiler.py 6/`
+- Fullscreen: `python2 keyboard-tiler.py place  '1' '/'`
+- Top Half of Screen: `python2 keyboard-tiler.py place '1' 'p'`
+- Top Right of Screen: `python2 keyboard-tiler.py place '6' 'p'`
+- Right Half of Screen: `python2 keyboard-tiler.py place '6' '/'`
 
 The best part? You can hook this into a chorded keymap program such as xchainkeys or just pipe it from dmenu.
 
@@ -18,18 +18,19 @@ The best part? You can hook this into a chorded keymap program such as xchainkey
 Usage
 -----
 
-**Prerequisites:** python2, xdotool
+**Prerequisites:** python2, xdotool (just a port of keyboard-tiler to python with stronger argument enforcing)
 
-Keyboard Tiler is just a simple script so using it is as simple as ```python2 keyboard-tiler.py place '1' '/'``` (that would make a window fullscreen). You 
-can 
+Keyboard Tiler is just a simple script so using it is as simple as ```python2 keyboard-tiler.py place '1' '/'``` (that would make a window fullscreen). You
+can
 also copy the script to your $PATH to have accessible anywhere. I'd recommend throwing it in a personal bin folder (like ```~/bin```).
 
 ### Usage with xchainkeys
 [Xchainkeys](http://code.google.com/p/xchainkeys/) provides chorded/chained keybindings for X11. Xchainkeys can be used to hook into keyboard-tiler.py very easily. Installation details for xchainkeys can be found [here](http://code.google.com/p/xchainkeys/).
 
 - Generate xchainkeys config using provided script: ```python2 keyboard-tiler.py makechains > ~/.config/xchainkeys/xchainkeys.conf```
-	* Optional: "moded" option: ```python2 keyboard-tiler.py -m > ~/.config/xchainkeys/xchainkeys.conf```
-- That's it! Run ```xchainkeys && disown``` and your done. 
+	* Optional: "moded" option: ```python2 keyboard-tiler.py makechains -m > ~/.config/xchainkeys/xchainkeys.conf```
+	* Optional: "decheight" option ```python2 keyboard-tiler.py -d 20 place 1 p``` will change the decoration height the program is accounting for.
+- That's it! Run ```xchainkeys && disown``` and your done.
 - Hit W-x (or your specified hotkey) and then two sucessive keys
 - Add xchainkeys to your ```.xinitrc``` to have it autostart
 
@@ -56,4 +57,5 @@ Contributing
 
 More Info
 ---------
-- [Project Page on My Site](http://userbound.com/projects/keyboard-tiler)
+- [Original Project Page](http://userbound.com/projects/keyboard-tiler)
+- [Original Project](https://github.com/mil/keyboard-tiler)

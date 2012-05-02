@@ -74,6 +74,7 @@ def place(args):
 		})
 
 	#Add offset if the window's x more than the first screen's width
+	print screens
 	if window['x'] > screens[0]['width']:
 		screenNumber = 1
 		screens[1]['offsetX'] = screens[0]['width']
@@ -109,11 +110,12 @@ def crawl(s,args):
 														__file__,s,cell))
 
 def makechains(args):
-	print("feedback on")
-	print("timeout 0")
-	print("delay 0")
-	print("foreground white")
-	print("background black")
+	if args.menu:
+		print("feedback on")
+		print("timeout 0")
+		print("delay 0")
+		print("foreground white")
+		print("background black")
 
 	#Continous Mode (doesnt stop resizing until hit Enter/Escape)
 	if args.moded:
@@ -135,6 +137,7 @@ subparsers = parser.add_subparsers(title='subcommands', \
 chain_parser = subparsers.add_parser('makechains')
 place_parser = subparsers.add_parser('place')
 
+chain_parser.add_argument('-mn','--menu',help="Use dmenu?",action='store_true',default=False)
 chain_parser.add_argument('-m','--moded', \
 						help='Make it so it doesn\'t stop unless needed?', \
 						action='store_true',default=False)
