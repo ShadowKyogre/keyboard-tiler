@@ -64,7 +64,7 @@ def place(args):
 
 	#Get the Screens Dimensions from xrandr
 	screens = []
-	screensoutput=check_output(['xrandr','--current'],shell=True)
+	screensoutput=check_output(['xrandr','--current'])
 	for screenNumber,screen in enumerate(findall('(.+) connected (\d+)x(\d+)+',screensoutput)):
 		screens.append({
 			'name' : screen[0],
