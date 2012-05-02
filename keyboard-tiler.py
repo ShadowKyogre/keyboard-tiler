@@ -1,13 +1,15 @@
 #!/usr/bin/python2
-# keyboard-tiler: A CLI to positions windows on the grid of your screen using xdotool
-# Usage:
-# keyboard-tiler a/  (This would place the window on the bottom half of your screen)
+#Used to generate a xchainkeys config file (~/.config/xchainkeys/xchainkeys.conf)
+#Should correspond to the Grid Your using in grid-wm
 
-#The Tiles you want to use for positioning, default is center of US Keyboard
+#usage:
+#<file> -h <#> place "f" "f"
+#<file> -h <#> makechains <-c> "blah" <-m>
+
 from subprocess import call, check_output
 from re import findall
 import sys
-from os import environ
+import argparse
 
 tiles = [
 	[ '1', '2', '3', '4', '5', '6', '7', '8', '9', '0' ],
@@ -15,13 +17,12 @@ tiles = [
 	[ 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';' ],
 	[ 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/' ]
 ]
-#Height of your window decorations, just set 0 if none
 
 def repositionWindow(squareA, squareB, screen, args):
 
 	gridDimensions = {
-		'width' => len(tiles[0]),
-		'height' => len(tiles)
+		'width' : len(tiles[0]),
+		'height' : len(tiles)
 	}
 
 	#Make sure tiles go from left top most to bottom right most
@@ -47,8 +48,8 @@ def repositionWindow(squareA, squareB, screen, args):
 	newHeight = (squareB['y'] - squareA['y'] + 1) * heightFactor
 
 	#Fire to xdotool move and resize commands
-	call(['xdotool','getactivewindow','windowmove','--sync',startX,args.height+startY])
-	call(['xdotool','getactivewindow','windowsize','--sync',newWidth,newHeight-(args.height*2)])
+	call(['xdotool','getactivewindow','windowmove','--sync',str(startX),str(args.decheight+startY)])
+	call(['xdotool','getactivewindow','windowsize','--sync',str(newWidth),str(newHeight-(args.decheight*2))])
 
 def place(args):
 	#Determine Current Window Values from xwin
@@ -63,17 +64,17 @@ def place(args):
 
 	#Get the Screens Dimensions from xrandr
 	screens = []
-	screensoutput=check_output('xrandr --current')
+	screensoutput=check_output(['xrandr','--current'],shell=True)
 	for screenNumber,screen in enumerate(findall('(.+) connected (\d+)x(\d+)+',screensoutput)):
-		screens[screenNumber] = {
+		screens.append({
 			'name' : screen[0],
 			'width' : int(screen[1]),
 			'height' : int(screen[2]),
 			'offsetX' : 0
-		}
+		})
 
 	#Add offset if the window's x more than the first screen's width
-	if window['x'] > screens[0]['width']):
+	if window['x'] > screens[0]['width']:
 		screenNumber = 1
 		screens[1]['offsetX'] = screens[0]['width']
 	else:
@@ -81,11 +82,72 @@ def place(args):
 
 	#Process ARGS to get pairs on the grid
 	pairs = {}
-	for arg,index in enumerate(findall('.',sys.argv[1]))
-		for row, column in enumerate(tiles):
-			for cell, count in enumerate(row):
+	for index,arg in enumerate(args.keylist):
+		for column,row in enumerate(tiles):
+			for count, cell in enumerate(row):
 				if cell == arg:
-					label = (index == 0) ? 'start' : 'end'
+					label = 'start' if (index == 0) else 'end'
 					pairs[label] =  { 'x' : count, 'y' : column }
+	print pairs
 
-	repositionWindow(pairs['start'], pairs['end'], screens[screenNumber])
+	repositionWindow(pairs['start'], pairs['end'], screens[screenNumber], args)
+
+def crawl(s,args):
+	for row in tiles:
+		for cell in row:
+			replacements = {
+				';' : "semicolon",
+				',' : "comma",
+				'.' : "period",
+				'/' : "slash",
+				}
+
+			s1 = replacements.get(s, s)
+			cell1 = replacements.get(cell, cell)
+			print("{0.chain} {1} {2} :exec {3}"
+			" -d {0.decheight} place '{4}' '{5}'".format(args,s1,cell1,\
+														__file__,s,cell))
+
+def makechains(args):
+	print("feedback on")
+	print("timeout 0")
+	print("delay 0")
+	print("foreground white")
+	print("background black")
+
+	#Continous Mode (doesnt stop resizing until hit Enter/Escape)
+	if args.moded:
+		print("{0.chain} :enter abort=manual".format(args))
+		print("{0.chain} Return abort=manual".format(args))
+		print("{0.chain} Escape abort=manual".format(args))
+
+	#Generate all permutations (2 key presses)
+	for row in tiles:
+		for cell in row:
+			crawl(cell,args)
+
+parser = argparse.ArgumentParser(prog='generate-xchains', \
+			description="Generates xchains for keyboard tiler")
+subparsers = parser.add_subparsers(title='subcommands', \
+			description='valid subcommands', \
+			dest='subparser_name', \
+			help='additional help')
+chain_parser = subparsers.add_parser('makechains')
+place_parser = subparsers.add_parser('place')
+
+chain_parser.add_argument('-m','--moded', \
+						help='Make it so it doesn\'t stop unless needed?', \
+						action='store_true',default=False)
+#Default Chain is Windows Keys (w) and x, Change this if wanted
+chain_parser.add_argument('-c','--chain',help='Which keybinding starts the chain', default='W-x')
+place_parser.add_argument('keylist', nargs=2)
+parser.add_argument('-d','--decheight',help='Specified decoration height',type=int,default=20)
+args = parser.parse_args(sys.argv[1:])
+
+if args.subparser_name=='makechains':
+	makechains(args)
+elif args.subparser_name=='place':
+	place(args)
+else:
+	print("Invalid command specified")
+	exit(1)
