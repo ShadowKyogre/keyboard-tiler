@@ -17,7 +17,8 @@ tiles = [
 	[ 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';' ],
 	[ 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/' ]
 ]
-
+#doesn't resize if window is max width
+#also needs to account for borders
 def repositionWindow(squareA, squareB, screen, args):
 
 	gridDimensions = {
@@ -128,14 +129,13 @@ def makechains(args):
 		for cell in row:
 			crawl(cell,args)
 
-parser = argparse.ArgumentParser(prog='generate-xchains', \
-			description="Generates xchains for keyboard tiler")
+parser = argparse.ArgumentParser(prog='keyboard-tiler')
 subparsers = parser.add_subparsers(title='subcommands', \
 			description='valid subcommands', \
 			dest='subparser_name', \
 			help='additional help')
-chain_parser = subparsers.add_parser('makechains')
-place_parser = subparsers.add_parser('place')
+chain_parser = subparsers.add_parser('makechains',description="Generates xchains for keyboard tiler")
+place_parser = subparsers.add_parser('place',description="Place a window depending on characters inputted")
 
 chain_parser.add_argument('-mn','--menu',help="Use dmenu?",action='store_true',default=False)
 chain_parser.add_argument('-m','--moded', \
