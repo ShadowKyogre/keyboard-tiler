@@ -17,8 +17,7 @@ tiles = [
 	[ 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';' ],
 	[ 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/' ]
 ]
-#doesn't resize if window is max width
-#also needs to account for borders
+#doesn't resize if window is max width somehow
 def repositionWindow(squareA, squareB, screen, args):
 
 	gridDimensions = {
@@ -57,8 +56,8 @@ def place(args):
 	actwin = check_output(['xdotool', 'getactivewindow'])
 	xwin = check_output(['xwininfo', '-id', actwin])
 	window = {
-		'x' : int(''.join(findall('Absolute upper-left X:\s+(\d+)',xwin)[0])),
-		'y' : int(''.join(findall('Absolute upper-left Y:\s+(\d+)',xwin)[0])),
+		'x' : int(''.join(findall('Absolute upper-left X:\s+(-?\d+)',xwin)[0])),
+		'y' : int(''.join(findall('Absolute upper-left Y:\s+(-?\d+)',xwin)[0])),
 		'width' : int(''.join(findall('Width:\s+(\d+)',xwin)[0])),
 		'height' : int(''.join(findall('Height:\s+(\d+)',xwin)))
 	}
