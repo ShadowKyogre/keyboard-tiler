@@ -48,23 +48,26 @@ def repositionWindow(squareA, squareB, screen, args):
 	newHeight = (squareB['y'] - squareA['y'] + 1) * heightFactor
 
 	#Fire to xdotool move and resize commands
+	print(startX,args.decheight+startY)
 	call(['xdotool','getactivewindow','windowmove','--sync',str(startX),str(args.decheight+startY)])
 	call(['xdotool','getactivewindow','windowsize','--sync',str(newWidth),str(newHeight-(args.decheight*2))])
 
 def place(args):
 	#Determine Current Window Values from xwin
-	actwin = check_output(['xdotool', 'getactivewindow'])
-	xwin = check_output(['xwininfo', '-id', actwin])
+	xwin = check_output(['xdotool', 'getactivewindow', 
+			'getwindowgeometry', '-shell']).decode(sys.getdefaultencoding())
 	window = {
-		'x' : int(''.join(findall('Absolute upper-left X:\s+(-?\d+)',xwin)[0])),
-		'y' : int(''.join(findall('Absolute upper-left Y:\s+(-?\d+)',xwin)[0])),
-		'width' : int(''.join(findall('Width:\s+(\d+)',xwin)[0])),
-		'height' : int(''.join(findall('Height:\s+(\d+)',xwin)))
+		'x' : int(''.join(findall('X=(-?\d+)',xwin)[0])),
+		'y' : int(''.join(findall('Y=(-?\d+)',xwin)[0])),
+		'width' : int(''.join(findall('WIDTH=(\d+)',xwin)[0])),
+		'height' : int(''.join(findall('HEIGHT=(\d+)',xwin)[0])),
+		'screen': int(''.join(findall('SCREEN=(\d+)',xwin)[0]))
 	}
+	print(window)
 
 	#Get the Screens Dimensions from xrandr
 	screens = []
-	screensoutput=check_output(['xrandr','--current'])
+	screensoutput=check_output(['xrandr','--current']).decode(sys.getdefaultencoding())
 	for screenNumber,screen in enumerate(findall('(.+) connected (\d+)x(\d+)+',screensoutput)):
 		screens.append({
 			'name' : screen[0],
@@ -74,7 +77,7 @@ def place(args):
 		})
 
 	#Add offset if the window's x more than the first screen's width
-	print screens
+	print(screens)
 	if window['x'] > screens[0]['width']:
 		screenNumber = 1
 		screens[1]['offsetX'] = screens[0]['width']
@@ -89,7 +92,7 @@ def place(args):
 				if cell == arg:
 					label = 'start' if (index == 0) else 'end'
 					pairs[label] =  { 'x' : count, 'y' : column }
-	print pairs
+	print(pairs)
 
 	repositionWindow(pairs['start'], pairs['end'], screens[screenNumber], args)
 
@@ -105,9 +108,9 @@ def crawl(s,args):
 
 			s1 = replacements.get(s, s)
 			cell1 = replacements.get(cell, cell)
-			print("{0.chain} {1} {2} :exec {3}"
+			print(("{0.chain} {1} {2} :exec {3}"
 			" -d {0.decheight} place '{4}' '{5}'".format(args,s1,cell1,\
-														__file__,s,cell))
+														__file__,s,cell)))
 
 def makechains(args):
 	if args.menu:
@@ -119,9 +122,9 @@ def makechains(args):
 
 	#Continous Mode (doesnt stop resizing until hit Enter/Escape)
 	if args.moded:
-		print("{0.chain} :enter abort=manual".format(args))
-		print("{0.chain} Return abort=manual".format(args))
-		print("{0.chain} Escape abort=manual".format(args))
+		print(("{0.chain} :enter abort=manual".format(args)))
+		print(("{0.chain} Return abort=manual".format(args)))
+		print(("{0.chain} Escape abort=manual".format(args)))
 
 	#Generate all permutations (2 key presses)
 	for row in tiles:
